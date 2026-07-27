@@ -24,10 +24,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .opts label:active{transform:scale(.99)}
 .opts label:hover{border-color:#1b8a3e;background:#f0faf0}
 .opts input{accent-color:#1b8a3e;width:16px;height:16px;cursor:pointer;flex-shrink:0}
-.opts .sel{border-color:#1b8a3e;background:#dcfce7}
+.opts .sel{border-color:#2563eb;background:#eff6ff;border-left:3px solid #2563eb}
 .opts .c{border-color:#15803d;background:#dcfce7}
+.opts .sel.c{border-color:#15803d;background:#dcfce7;border-left:3px solid #15803d}
 .opts .c .mk{color:#15803d;font-weight:700}
 .opts .w{border-color:#dc2626;background:#fee2e2}
+.opts .sel.w{border-color:#dc2626;background:#fee2e2;border-left:3px solid #dc2626}
 .opts .w .mk{color:#dc2626;font-weight:700}
 .fi{width:100%;padding:8px 12px;border:1px solid #dce6dc;border-radius:8px;font-size:14px;outline:none;font-family:inherit}
 .fi:focus{border-color:#1b8a3e;box-shadow:0 0 0 3px rgba(27,138,62,.15)}
@@ -57,6 +59,9 @@ textarea:focus{border-color:#1b8a3e;box-shadow:0 0 0 3px rgba(27,138,62,.15)}
 .analysis-section{margin-top:14px}
 .analysis-item{padding:10px;border:1px solid #dce6dc;border-radius:8px;margin-bottom:6px;font-size:12px;line-height:1.5;background:#fff}
 .analysis-item .aq{font-weight:500;margin-bottom:3px}
+.analysis-item .ad{color:#4b5563;margin-top:2px;font-size:12px}
+.analysis-item .ad .user-ans{color:#2563eb}
+.analysis-item .ad .corr-ans{color:#15803d}
 .correct-txt{color:#15803d;font-weight:600}
 .wrong-txt{color:#dc2626;font-weight:600}
 .short-ref{background:#f0faf0;border:1px solid #15803d;border-radius:8px;padding:10px;font-size:12px;line-height:1.5;margin-top:8px}
@@ -90,7 +95,7 @@ textarea:focus{border-color:#1b8a3e;box-shadow:0 0 0 3px rgba(27,138,62,.15)}
 <div class="ftr-info">已答 <strong id="answeredCount">0</strong>/26 | 得分 <strong id="scoreDisplay">0</strong></div>
 <div class="btn-grp">
 <button class="btn btn-s" onclick="reshuffle()">🔄 重新抽题</button>
-<button class="btn btn-p" id="submitBtn" onclick="submitQuiz()" disabled>📩 提交</button>
+<button class="btn btn-p" id="submitBtn" onclick="submitQuiz()">📩 提交</button>
 </div>
 </div></div>
 <script>
@@ -108,7 +113,7 @@ function render(){
   curQ={s:pick(QB.singles,10),m:pick(QB.multis,5),f:pick(QB.fills,10),h:pick(QB.shorts,1)};
   ans={};
   var btn=document.getElementById("submitBtn");
-  btn.disabled=true;btn.textContent="📩 提交";
+  document.getElementById("submitBtn").disabled=false;document.getElementById("submitBtn").textContent="📩 提交";
   document.getElementById("answeredCount").textContent="0";
   document.getElementById("scoreDisplay").textContent="0";
   document.getElementById("resultBox").classList.remove("show");
@@ -152,9 +157,9 @@ function upd(){
   curQ.s.forEach(function(x,i){if(ans["s_"+i]&&ans["s_"+i].length>0)n++;});
   curQ.m.forEach(function(x,i){if(ans["m_"+i]&&ans["m_"+i].length>0)n++;});
   curQ.f.forEach(function(x,i){if(ans["f_"+i]&&ans["f_"+i].length>0)n++;});
-  curQ.h.forEach(function(x,i){if(ans["h_"+i]&&ans["h_"+i].length>=10)n++;});
+  curQ.h.forEach(function(x,i){if(ans["h_"+i]&&ans["h_"+i].length>0)n++;});
   document.getElementById("answeredCount").textContent=n;
-  document.getElementById("submitBtn").disabled=(n<26);
+  document.getElementById("scoreDisplay").textContent=Math.min(n*4,100);
 }
 
 function submitQuiz(){
@@ -172,12 +177,13 @@ function submitQuiz(){
       var ok=ua.length>0&&ua[0]===q.a;
       if(ok)total+=3;
       var ls=document.querySelectorAll("#o_s_"+i+" label");
+      var userPick=ua.length>0?String.fromCharCode(65+ua[0]):"(未选)";
+      var correctAns=String.fromCharCode(65+q.a);
       ls.forEach(function(el,oi){
-        el.classList.remove("sel");
         if(oi===q.a)el.classList.add("c");
         if(ua.length>0&&ua[0]===oi&&oi!==q.a)el.classList.add("w");
       });
-      dt.push({t:"s",q:q.q,ok:ok,pt:ok?3:0,mp:3});
+      dt.push({t:"s",q:q.q,ok:ok,pt:ok?3:0,mp:3,ua:userPick,ca:correctAns});
     });
     
     curQ.m.forEach(function(q,i){
@@ -186,12 +192,13 @@ function submitQuiz(){
       if(ok){for(var j=0;j<ua.length;j++){if(q.a.indexOf(ua[j])===-1){ok=false;break;}}}
       if(ok)total+=4;
       var ls=document.querySelectorAll("#o_m_"+i+" label");
+      var userPick=ua.length>0?ua.map(function(v){return String.fromCharCode(65+v)}).join(","):"(未选)";
+      var correctAns=q.a.map(function(v){return String.fromCharCode(65+v)}).join(",");
       ls.forEach(function(el,oi){
-        el.classList.remove("sel");
         if(q.a.indexOf(oi)!==-1)el.classList.add("c");
         if(ua.indexOf(oi)!==-1&&q.a.indexOf(oi)===-1)el.classList.add("w");
       });
-      dt.push({t:"m",q:q.q,ok:ok,pt:ok?4:0,mp:4});
+      dt.push({t:"m",q:q.q,ok:ok,pt:ok?4:0,mp:4,ua:userPick,ca:correctAns});
     });
     
     curQ.f.forEach(function(q,i){
@@ -201,7 +208,7 @@ function submitQuiz(){
       if(q.a){for(var j=0;j<q.a.length;j++){if(ua.indexOf(q.a[j])!==-1){ok=true;break;}}}
       if(ok)total+=3;
       if(el){el.classList.add(ok?"c":"w");el.readOnly=true;}
-      dt.push({t:"f",q:q.q,ok:ok,pt:ok?3:0,mp:3});
+      dt.push({t:"f",q:q.q,ok:ok,pt:ok?3:0,mp:3,ua:ua||"(未填)",ca:q.a.join(" / ")});
     });
     
     curQ.h.forEach(function(q,i){
@@ -211,10 +218,10 @@ function submitQuiz(){
       if(q.k&&q.k.length>0){for(var j=0;j<q.k.length;j++){if(ua.indexOf(q.k[j])!==-1)mc++;}}
       var sc=Math.round((mc/Math.max(q.k.length,1))*20);
       if(sc<0)sc=0;if(sc>20)sc=20;
-      if(ua.length>=10&&sc<2)sc=2;
+      if(ua.length>0&&sc<2)sc=2;
       total+=sc;
       if(el)el.readOnly=true;
-      dt.push({t:"h",q:q.q,ok:sc>=12,pt:sc,mp:20,ref:q.r});
+      dt.push({t:"h",q:q.q,ok:sc>=12,pt:sc,mp:20,ua:ua||"(未填)",ref:q.r});
     });
     
     showResults(total,dt);
@@ -242,7 +249,17 @@ function showResults(total,dt){
   dt.forEach(function(d,i){
     h+="<div class=\"analysis-item\">";
     h+="<div class=\"aq\">"+(i+1)+". "+esc(d.q)+" <span class=\""+(d.ok?"correct-txt":"wrong-txt")+"\">("+d.pt+"/"+d.mp+"分)</span></div>";
-    if(d.t==="h"&&d.ref){h+="<div class=\"short-ref\"><strong>参考答案：</strong>"+esc(d.ref)+"</div>";}
+    if(d.t==="s"||d.t==="m"){
+      h+="<div class=\"ad\">你的答案：<span class=\"user-ans\">"+esc(d.ua)+"</span>";
+      if(!d.ok)h+=" | 正确答案：<span class=\"corr-ans\">"+esc(d.ca)+"</span>";
+      h+="</div>";
+    }else if(d.t==="f"){
+      h+="<div class=\"ad\">你的答案：<span class=\"user-ans\">"+esc(d.ua)+"</span>";
+      if(!d.ok)h+=" | 正确答案：<span class=\"corr-ans\">"+esc(d.ca)+"</span>";
+      h+="</div>";
+    }else if(d.t==="h"){
+      h+="<div class=\"short-ref\"><strong>参考答案：</strong>"+esc(d.ref)+"</div>";
+    }
     h+="</div>";
   });
   h+="</div>";
