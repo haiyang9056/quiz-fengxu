@@ -230,7 +230,7 @@ function showResults(total,dt){
   document.getElementById("app").style.display="none";
   var rb=document.getElementById("resultBox");
   rb.style.display="block";rb.classList.add("show");
-  var pass=total>=60;
+  var pass=total>=70;
   var h="";
   h+="<div class=\"result-hdr\">";
   h+="<div class=\"big-score"+(pass?"":" w")+"\">"+total+"<span style=\"font-size:18px;font-weight:400;color:#6b7280\">/100</span></div>";
@@ -254,5 +254,7 @@ render();
 </script>
 </body>
 </html>
+
+
 
 
