@@ -6,7 +6,7 @@ function pick(a,n){var b=a.slice();shf(b);return b.slice(0,n);}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function render(){
 done=false;
-curQ={s:pick(QB.singles,10),m:pick(QB.multis,5),f:pick(QB.fills,10),h:pick(QB.shorts,1)};
+curQ={s:pick(QB.singles,20),m:pick(QB.multis,5),f:pick(QB.fills,10),h:pick(QB.shorts,1)};
 ans={};
 document.getElementById('submitBtn').disabled=false;
 document.getElementById('submitBtn').textContent='📩 提交';
@@ -16,10 +16,10 @@ document.getElementById('resultBox').classList.remove('show');
 document.getElementById('resultBox').style.display='none';
 var app=document.getElementById('app');app.style.display='block';
 var h='',n=0;
-h+='<div class="sec-title"><span>一、单选题</span><span class="pt">10题×3分=30分</span></div>';
+h+='<div class="sec-title"><span>一、单选题</span><span class="pt">20题×2分=40分</span></div>';
 curQ.s.forEach(function(q,i){
 n++;var id='s_'+i;
-h+='<div class="q-card"><div class="q-text"><span class="q-num">'+n+'.</span>'+esc(q.q)+'<span class="q-pts">(3分)</span></div><div class="opts" id="o_'+id+'">';
+h+='<div class="q-card"><div class="q-text"><span class="q-num">'+n+'.</span>'+esc(q.q)+'<span class="q-pts">(2分)</span></div><div class="opts" id="o_'+id+'">';
 q.o.forEach(function(o,oi){var l=String.fromCharCode(65+oi);h+='<label onclick="selS('+i+','+oi+')"><input type="radio" name="'+id+'" value="'+oi+'"><span>'+l+'. '+esc(o)+'</span></label>';});
 h+='</div></div>';
 });
@@ -30,10 +30,10 @@ h+='<div class="q-card"><div class="q-text"><span class="q-num">'+n+'.</span>'+e
 q.o.forEach(function(o,oi){var l=String.fromCharCode(65+oi);h+='<label><input type="checkbox" onchange="togM('+i+','+oi+')"><span>'+l+'. '+esc(o)+'</span></label>';});
 h+='</div></div>';
 });
-h+='<div class="sec-title"><span>三、填空题</span><span class="pt">10题×3分=30分</span></div>';
+h+='<div class="sec-title"><span>三、填空题</span><span class="pt">10题×2分=20分</span></div>';
 curQ.f.forEach(function(q,i){
 n++;var id='f_'+i;
-h+='<div class="q-card"><div class="q-text"><span class="q-num">'+n+'.</span>'+esc(q.q)+'<span class="q-pts">(3分)</span></div><input class="fi" id="i_'+id+'" type="text" placeholder="请输入答案..." oninput="fill('+i+')"></div>';
+h+='<div class="q-card"><div class="q-text"><span class="q-num">'+n+'.</span>'+esc(q.q)+'<span class="q-pts">(2分)</span></div><input class="fi" id="i_'+id+'" type="text" placeholder="请输入答案..." oninput="fill('+i+')"></div>';
 });
 h+='<div class="sec-title"><span>四、简答题</span><span class="pt">1题×20分=20分</span></div>';
 curQ.h.forEach(function(q,i){
@@ -47,13 +47,13 @@ function togM(i,oi){if(done)return;if(!ans['m_'+i])ans['m_'+i]=[];var a=ans['m_'
 function fill(i){if(done)return;var el=document.getElementById('i_f_'+i);ans['f_'+i]=el?el.value.trim():'';upd();}
 function shortA(i){if(done)return;var el=document.getElementById('i_h_'+i);ans['h_'+i]=el?el.value.trim():'';upd();}
 function upd(){
-var n=0;
-curQ.s.forEach(function(x,i){if(ans['s_'+i]&&ans['s_'+i].length>0)n++;});
-curQ.m.forEach(function(x,i){if(ans['m_'+i]&&ans['m_'+i].length>0)n++;});
-curQ.f.forEach(function(x,i){if(ans['f_'+i]&&ans['f_'+i].length>0)n++;});
-curQ.h.forEach(function(x,i){if(ans['h_'+i]&&ans['h_'+i].length>0)n++;});
+var n=0,sc=0;
+curQ.s.forEach(function(x,i){if(ans['s_'+i]&&ans['s_'+i].length>0){n++;sc+=2;}});
+curQ.m.forEach(function(x,i){if(ans['m_'+i]&&ans['m_'+i].length>0){n++;sc+=4;}});
+curQ.f.forEach(function(x,i){if(ans['f_'+i]&&ans['f_'+i].length>0){n++;sc+=2;}});
+curQ.h.forEach(function(x,i){if(ans['h_'+i]&&ans['h_'+i].length>0){n++;sc+=20;}});
 document.getElementById('answeredCount').textContent=n;
-document.getElementById('scoreDisplay').textContent=Math.min(n*4,100);
+document.getElementById('scoreDisplay').textContent=Math.min(sc,100);
 }
 function submitQuiz(){
 if(done)return;done=true;
@@ -63,12 +63,12 @@ try{var total=0;var dt=[];
 curQ.s.forEach(function(q,i){
 var ua=ans['s_'+i]||[];
 var ok=ua.length>0&&ua[0]===q.a;
-if(ok)total+=3;
+if(ok)total+=2;
 var ls=document.querySelectorAll('#o_s_'+i+' label');
 var userPick=ua.length>0?String.fromCharCode(65+ua[0])+'. '+q.o[ua[0]]:'(未选)';
 var correctAns=String.fromCharCode(65+q.a)+'. '+q.o[q.a];
 ls.forEach(function(el,oi){if(oi===q.a)el.classList.add('c');if(ua.length>0&&ua[0]===oi&&oi!==q.a)el.classList.add('w');});
-dt.push({t:'s',q:q.q,ok:ok,pt:ok?3:0,mp:3,ua:userPick,ca:correctAns});
+dt.push({t:'s',q:q.q,ok:ok,pt:ok?2:0,mp:2,ua:userPick,ca:correctAns});
 });
 curQ.m.forEach(function(q,i){
 var ua=ans['m_'+i]||[];
@@ -85,9 +85,9 @@ curQ.f.forEach(function(q,i){
 var el=document.getElementById('i_f_'+i);
 var ua=el?el.value.trim():'';
 var ok=false;if(q.a){for(var j=0;j<q.a.length;j++){if(ua.indexOf(q.a[j])!==-1){ok=true;break;}}}
-if(ok)total+=3;
+if(ok)total+=2;
 if(el){el.classList.add(ok?'c':'w');el.readOnly=true;}
-dt.push({t:'f',q:q.q,ok:ok,pt:ok?3:0,mp:3,ua:ua||'(未填)',ca:q.a.join(' / ')});
+dt.push({t:'f',q:q.q,ok:ok,pt:ok?2:0,mp:2,ua:ua||'(未填)',ca:q.a.join(' / ')});
 });
 curQ.h.forEach(function(q,i){
 var el=document.getElementById('i_h_'+i);
@@ -111,7 +111,7 @@ h+='<div class="big-score'+(pass?'':' w')+'">'+total+'<span style="font-size:18p
 h+='<div class="score-label">'+(pass?'🎉 恭喜通过！':'😅 未通过，再接再厉！')+'</div>';
 var ss=0,ms=0,fs=0,hs=0;
 dt.forEach(function(d){if(d.t==='s')ss+=d.pt;if(d.t==='m')ms+=d.pt;if(d.t==='f')fs+=d.pt;if(d.t==='h')hs+=d.pt;});
-h+='<div class="score-detail"><span>单选: '+ss+'/30</span><span>多选: '+ms+'/20</span><span>填空: '+fs+'/30</span><span>简答: '+hs+'/20</span></div>';
+h+='<div class="score-detail"><span>单选: '+ss+'/40</span><span>多选: '+ms+'/20</span><span>填空: '+fs+'/20</span><span>简答: '+hs+'/20</span></div>';
 h+='</div><div class="analysis-section">';
 dt.forEach(function(d,i){
 h+='<div class="analysis-item">';
